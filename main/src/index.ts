@@ -1,10 +1,14 @@
 import express, { Request, Response } from "express";
+import axios, { AxiosError } from 'axios';
 import { MongoClient } from "mongodb";
 import { User } from "./types";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import axios, { AxiosError } from 'axios';
+import multer from "multer";
+import fs from "fs";
+
+const upload = multer({ dest: "uploads/" });
 
 dotenv.config();
 
@@ -94,14 +98,22 @@ app.post("/logout", async (req: Request, res: Response) => {
   }
 });
 
-app.post('/ocr', async (req, res) => {
-  try {
-    const { image_base64 } = req.body;
-    const response = await axios.post('http://ocr-service:5000/ocr', {image_base64: image_base64 });
-    res.json(response.data);
-  } catch (err:unknown) {
-    res.status(500).json({ error: (err as AxiosError).message });
-  }
+app.post("/ocr", upload.single("image"), async (req, res) => {
+    try {
+        const filePath = (req as any).file.path;
+        const imageBuffer = fs.readFileSync(filePath);
+
+        const response = await axios.post(
+            'http://ocr-service:5000/ocr',
+            imageBuffer,
+            { headers: { 'Content-Type': 'application/octet-stream' } }
+        );
+
+        fs.unlinkSync(filePath);
+        res.json(response.data);
+    } catch (err: unknown) {
+        res.status(500).json({ error: (err as AxiosError).message });
+    }
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
