@@ -1,15 +1,15 @@
 services:
-  backend:
-    build: .
+  main:
+    build: ./main
     ports:
       - "3000:3000"
     depends_on:
       - mongo
+      - ocr-service
     environment:
-      - MONGO_URI=mongodb://mongo:27017/mydatabase
+      - MONGO_URI=mongodb://mongo:27017/server_database
     env_file:
-      - .env
-    command: sh -c "tsc && node dist/index.js"
+      - ./main/.env
 
   mongo:
     image: mongo:7.0
@@ -17,6 +17,11 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+
+  ocr-service:
+    build: ./ocr_service
+    ports:
+      - "5000:5000"
 
 volumes:
   mongodb_data:

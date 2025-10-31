@@ -1,0 +1,28 @@
+# 使用官方 Node 20 LTS Alpine 镜像
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# 先复制 package.json 安装依赖
+COPY package*.json ./
+RUN npm install
+
+# 复制 TypeScript 配置和源代码
+COPY tsconfig.json ./
+COPY src ./src
+
+# 编译 TypeScript
+RUN npx tsc
+
+# ====== 生产镜像 ======
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 只复制编译好的 JS 和 node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY .env ./
+
+EXPOSE 3000
+CMD ["node", "dist/index.js"]

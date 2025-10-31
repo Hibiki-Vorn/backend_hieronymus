@@ -1,0 +1,21 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+COPY requirements.txt ./
+
+# 安装 OpenCV 依赖 + Paddle 依赖
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libglib2.0-0 \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+COPY . .
+EXPOSE 5000
+CMD ["python", "app.py"]

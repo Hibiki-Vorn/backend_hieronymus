@@ -1,9 +1,10 @@
 import express, { Request, Response } from "express";
 import { MongoClient } from "mongodb";
+import { User } from "./types";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { User } from "./types";
+import axios, { AxiosError } from 'axios';
 
 dotenv.config();
 
@@ -17,7 +18,14 @@ const client = new MongoClient(MONGO_URI);
 
 let db = client.db("userData");
 
-client.connect().then(() => console.log("Connected to MongoDB"));
+client.connect().then(async () => {
+  console.log("Connected to MongoDB");
+  await db.collection("loggedOut_token").createIndex(
+    { exp: 1 },
+    { expireAfterSeconds: 0 }
+  );
+});
+
 
 app.get("/", async (req: Request, res: Response) => {
   res.json({ Msg: "success" });
@@ -71,17 +79,29 @@ app.post("/login", async (req: Request, res: Response) => {
 
 app.post("/logout", async (req: Request, res: Response) => {
   const { token } = req.body;
-  const decoded_token = jwt.decode(token);
-  if (!decoded_token || typeof decoded_token !== "object" || !("exp" in decoded_token)) {
-    return res.status(400).json({ Msg: "Invalid token" });
+
+  try {
+    const verified = jwt.verify(token, JWT_SECRET) as { exp: number };
+
+    await db.collection("loggedOut_token").insertOne({
+      token,
+      exp: new Date(verified.exp * 1000),
+    });
+
+    res.json({ Msg: "Logged out successfully" });
+  } catch (err) {
+    res.status(400).json({ Msg: "Invalid token" });
   }
-  const exp = (decoded_token as { exp: number }).exp;
-  await db.collection("loggedOut_token").insertOne({
-    token,
-    exp: new Date(exp * 1000),
-  });
-  res.json({});
-  
+});
+
+app.post('/ocr', async (req, res) => {
+  try {
+    const { image_base64 } = req.body;
+    const response = await axios.post('http://ocr-service:5000/ocr', {image_base64: image_base64 });
+    res.json(response.data);
+  } catch (err:unknown) {
+    res.status(500).json({ error: (err as AxiosError).message });
+  }
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
