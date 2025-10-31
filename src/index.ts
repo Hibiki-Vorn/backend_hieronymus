@@ -19,6 +19,10 @@ let db = client.db();
 
 client.connect().then(() => console.log("Connected to MongoDB"));
 
+app.get("/", async (req: Request, res: Response) => {
+  res.json({ Msg: "success" });
+});
+
 // 注册
 app.post("/register", async (req: Request, res: Response) => {
   const { name, avatar, passwd } = req.body;

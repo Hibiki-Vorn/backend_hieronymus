@@ -1,18 +1,15 @@
-version: "3.9"
-
 services:
   backend:
     build: .
     ports:
       - "3000:3000"
-    volumes:
-      - ./src:/app/src
     depends_on:
       - mongo
     environment:
       - MONGO_URI=mongodb://mongo:27017/mydatabase
     env_file:
       - .env
+    command: sh -c "tsc && node dist/index.js"
 
   mongo:
     image: mongo:7.0

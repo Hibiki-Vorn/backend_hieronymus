@@ -2,18 +2,21 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# 复制依赖
 COPY package*.json ./
 RUN npm install
 
-# 安装 TypeScript 编译器
-RUN npm install -g typescript ts-node
+# 安装 TypeScript
+RUN npm install -g typescript
 
-# 复制源代码
-COPY ./src ./src
+# 复制源码与配置
+COPY tsconfig.json ./
+COPY src ./src
+COPY .env ./
 
-# 暴露端口
+# 预编译 TypeScript -> dist
+RUN tsc
+
 EXPOSE 3000
 
-# 启动 TS 后端
-CMD ["ts-node", "src/index.ts"]
+# 默认命令（可被 docker-compose 覆盖）
+CMD ["node", "dist/index.js"]
