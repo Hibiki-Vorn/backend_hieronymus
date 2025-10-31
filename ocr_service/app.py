@@ -75,7 +75,7 @@ def ocr_base64():
 @app.route('/ocr', methods=['POST'])
 def ocr_file():
     try:
-        image_bytes = request.data  # 接收原始字节流
+        image_bytes = request.data
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
