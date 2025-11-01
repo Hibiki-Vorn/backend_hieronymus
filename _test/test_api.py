@@ -3,7 +3,6 @@ import random
 import string
 
 BASE_URL = "http://localhost:3000"
-OCR_FILE = "_test/test1.png"
 
 def random_str(n=6):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=n))
@@ -30,23 +29,16 @@ post_data = resp.json()
 post_id = post_data.get("post_id")
 print("New Post:", post_data)
 
-# -------- OCR 测试 --------
-print("Testing OCR...")
-with open(OCR_FILE, "rb") as f:
-    files = {"image": f}
-    resp = requests.post(f"{BASE_URL}/ocr", headers=headers, files=files)
-print("OCR:", resp.json())
-
 # -------- 评论 & 回复 --------
 print("Adding a comment to the post...")
 resp = requests.post(f"{BASE_URL}/commentPost", headers=headers, json={"post_id": post_id, "content": "First comment"})
 comment_id = resp.json().get("post_id")
-print("Comment added:", comment_id)
+print("Comment added:", resp.json())
 
 print("Replying to the comment...")
 resp = requests.post(f"{BASE_URL}/replyComment", headers=headers, json={"comment_id": comment_id, "content": "Reply to first comment"})
-reply_id = resp.json().get("post_id")
-print("Reply added:", reply_id)
+#reply_id = resp.json().get("post_id")
+print("Reply added:", resp.json())
 
 # -------- 点赞 & 收藏 --------
 print("Liking the post...")

@@ -113,13 +113,13 @@ export const delpost = async (req: Request, res: Response) => {
 export const commentPost = async (req: AuthenticatedRequest, res: Response) => {
     const { post_id, content } = req.body;
 
-    if (await postsCol.findOne({_id: post_id}) === null) {
+    if (await postsCol.findOne({_id: new ObjectId(post_id)}) === null) {
         return res.status(404).json({ Msg: "Post not Found" })
     }
 
     const commentPost_result = await commentsCol.insertOne({
         content: content,
-        Father_ptr: post_id,
+        Father_ptr: new ObjectId(post_id),
         FatherType: "Post",
         createdAt: new Date(),
         has_subComment: false,
@@ -143,19 +143,19 @@ export const delcomment = async (req: Request, res: Response) => {
 
 export const replyComment = async (req: AuthenticatedRequest, res: Response) => {
     const { comment_id, content } = req.body;
-    const thisComment = await commentsCol.findOne({_id: comment_id})
 
-    if (thisComment === null) {
+    if (await commentsCol.findOne({_id: new ObjectId(comment_id)}) === null) {
         return res.status(404).json({ Msg: "Comment not Found" })
     }
-    commentsCol.updateOne(
-        { _id: thisComment._id },
-        { $set: { has_subComment: true } }
+
+    await commentsCol.updateOne(
+        { _id: new ObjectId(comment_id) },
+        { $set: { has_subComment: true } } // ✅ 必须加 $set
     )
 
     const commentPost_result = await commentsCol.insertOne({
         content: content,
-        Father_ptr: comment_id,
+        Father_ptr: new ObjectId(comment_id),
         FatherType: "Comment",
         createdAt: new Date(),
         has_subComment: false,
@@ -163,6 +163,7 @@ export const replyComment = async (req: AuthenticatedRequest, res: Response) => 
     })
 
     res.json({ post_id: commentPost_result.insertedId })
+
 }
 
 export const getPostComment = async (req: Request, res: Response) => {

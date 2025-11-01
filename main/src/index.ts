@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 app.post("/replyComment", middleware.authenticateToken, user_action.replyComment as RequestHandler)
 
-app.post("/commentPost", middleware.authenticateToken, user_action.newpost as RequestHandler)
+app.post("/commentPost", middleware.authenticateToken, user_action.commentPost as RequestHandler)
 
 app.post("/newpost", middleware.authenticateToken, user_action.newpost as RequestHandler)
 
