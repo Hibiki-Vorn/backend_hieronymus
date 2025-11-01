@@ -5,7 +5,7 @@ services:
       - "3000:3000"
     depends_on:
       - mongo
-      - ocr-service
+      - python-service
     environment:
       - MONGO_URI=mongodb://mongo:27017/server_database
     env_file:
@@ -18,8 +18,8 @@ services:
     volumes:
       - mongodb_data:/data/db
 
-  ocr-service:
-    build: ./ocr_service
+  python-service:
+    build: ./python_service
     ports:
       - "5000:5000"
 

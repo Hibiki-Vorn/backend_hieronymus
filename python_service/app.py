@@ -1,4 +1,3 @@
-import base64
 from flask import Flask, request, jsonify
 from paddleocr import PaddleOCR
 import numpy as np
